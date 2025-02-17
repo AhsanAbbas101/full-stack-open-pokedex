@@ -11,6 +11,9 @@ on:
       - opened
       - synchronize
 
+env:
+  SKIP_DEPLOY_TAG: ${{ contains( join(github.event.commits.*.message), '#skip' ) }}
+
 jobs:
   simple_deployment_pipeline:
     runs-on: ubuntu-20.04
@@ -34,7 +37,7 @@ jobs:
       - name: e2e tests
         run: npm run test:e2e
       - name: Trigger deployment
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' && env.SKIP_DEPLOY_TAG == 'false' }}
         run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
     
   tag_release:
@@ -45,7 +48,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Generate Tag
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' && env.SKIP_DEPLOY_TAG == 'false' }}
         uses: anothrNick/github-tag-action@1.71.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
