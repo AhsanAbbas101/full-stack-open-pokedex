@@ -46,7 +46,7 @@ jobs:
         with: 
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
           text: Build failed
-          details: Build failed against commits ${{ join(github.event.commits.*.message) }}
+          details: "Build failed for commit ${{ github.event.head_commit.url }} by author ${{ github.event.head_commit.author.committer }}"
           
     
   tag_release:
