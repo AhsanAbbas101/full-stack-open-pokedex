@@ -67,12 +67,12 @@ jobs:
           DRY_RUN: false
       - name: Deploy success notification
         if: ${{ github.event_name == 'push' && env.SKIP_DEPLOY_TAG == 'false' }}
-        env: 
-          NEW_TAG: ${{ steps.step_generate_tag.outputs.tag }}
-        uses: rjstone/discord-webhook-notify@v1
+        uses: sarisia/actions-status-discord@v1
         with: 
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-          severity: info
-          text: A new version $NEW_TAG successfully deployed.
-          description: "URL: ${{ env.DEPLOY_URL }} by ${{ github.triggering_actor }}"    
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          nodetail: true
+          text: "A new version `${{ steps.step_generate_tag.outputs.tag }}` successfully deployed."
+          description: |
+            URL: ${{ env.DEPLOY_URL }}
+            By ${{ github.triggering_actor }}   
 
