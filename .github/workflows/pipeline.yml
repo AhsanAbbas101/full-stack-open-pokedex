@@ -71,7 +71,7 @@ jobs:
         with: 
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           nodetail: true
-          text: "A new version `${{ steps.step_generate_tag.outputs.tag }}` successfully deployed."
+          content: "A new version `${{ steps.step_generate_tag.outputs.tag }}` successfully deployed."
           description: |
             URL: ${{ env.DEPLOY_URL }}
             By ${{ github.triggering_actor }}   
