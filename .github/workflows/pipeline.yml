@@ -13,7 +13,6 @@ on:
 
 env:
   SKIP_DEPLOY_TAG: ${{ contains( join(github.event.commits.*.message), '#skip' ) }}
-  DEPLOY_APP: ${{ github.event_name == 'push' && env.SKIP_DEPLOY_TAG == 'false' }}
   DEPLOY_URL: 'https://full-stack-open-pokedex-lv2o.onrender.com'
 
 jobs:
@@ -39,7 +38,7 @@ jobs:
       - name: e2e tests
         run: npm run test:e2e
       - name: Trigger deployment
-        if: ${{ env.DEPLOY_APP }}
+        if: ${{ github.event_name == 'push' && env.SKIP_DEPLOY_TAG == 'false' }}
         run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
       - name: Build failure
         if: ${{ failure() }}
@@ -59,7 +58,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Generate Tag
         id: step_generate_tag
-        if: ${{ env.DEPLOY_APP }}
+        if: ${{ github.event_name == 'push' && env.SKIP_DEPLOY_TAG == 'false' }}
         uses: anothrNick/github-tag-action@1.71.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -67,7 +66,7 @@ jobs:
           WITH_V: true
           DRY_RUN: false
       - name: Deploy success notification
-        if: ${{ env.DEPLOY_APP }}
+        if: ${{ github.event_name == 'push' && env.SKIP_DEPLOY_TAG == 'false' }}
         env: 
           NEW_TAG: ${{ steps.step_generate_tag.outputs.tag }}
         uses: rjstone/discord-webhook-notify@v1
