@@ -13,6 +13,8 @@ on:
 
 env:
   SKIP_DEPLOY_TAG: ${{ contains( join(github.event.commits.*.message), '#skip' ) }}
+  DEPLOY_APP: ${{ github.event_name == 'push' && env.SKIP_DEPLOY_TAG == 'false' }}
+  DEPLOY_URL: 'https://full-stack-open-pokedex-lv2o.onrender.com'
 
 jobs:
   simple_deployment_pipeline:
@@ -37,8 +39,16 @@ jobs:
       - name: e2e tests
         run: npm run test:e2e
       - name: Trigger deployment
-        if: ${{ github.event_name == 'push' && env.SKIP_DEPLOY_TAG == 'false' }}
+        if: ${{ env.DEPLOY_APP }}
         run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
+      - name: Build failure
+        if: ${{ failure() }}
+        uses: rjstone/discord-webhook-notify@v1
+        with: 
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          text: Build failed
+          details: Build failed against commits ${{ join(github.event.commits.*.message) }}
+          
     
   tag_release:
     needs: 
@@ -48,11 +58,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Generate Tag
-        if: ${{ github.event_name == 'push' && env.SKIP_DEPLOY_TAG == 'false' }}
+        id: step_generate_tag
+        if: ${{ env.DEPLOY_APP }}
         uses: anothrNick/github-tag-action@1.71.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
           WITH_V: true
           DRY_RUN: false
+      - name: Deploy success notification
+        if: ${{ env.DEPLOY_APP }}
+        env: 
+          NEW_TAG: ${{ steps.step_generate_tag.outputs.tag }}
+        uses: rjstone/discord-webhook-notify@v1
+        with: 
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          severity: info
+          text: A new version $NEW_TAG successfully deployed.
+          description: "URL: ${{ env.DEPLOY_URL }} by ${{ github.triggering_actor }}"    
 
