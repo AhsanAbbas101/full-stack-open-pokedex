@@ -40,16 +40,13 @@ jobs:
       - name: Trigger deployment
         if: ${{ github.event_name == 'push' && env.SKIP_DEPLOY_TAG == 'false' }}
         run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
-      - name: Build failure
-        env:
-          COMMIT_URL: ${{ github.event.head_commit.url }}
-          COMMIT_AUTHOR: ${{ github.event.head_commit.committer.username }}
+      - name: Build failur
         if: ${{ failure() }}
-        uses: rjstone/discord-webhook-notify@v1
+        uses: sarisia/actions-status-discord@v1
         with: 
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-          text: Build failed
-          details: "Build failed for commit $COMMIT_URL by author $COMMIT_AUTHOR"
+          content: Build failed
+          description: "Build failed for commit ${{ github.event.head_commit.url }} by author ${{ github.event.head_commit.committer.username }}"
           
     
   tag_release:
