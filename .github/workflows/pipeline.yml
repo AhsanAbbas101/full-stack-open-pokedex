@@ -44,7 +44,7 @@ jobs:
         if: ${{ failure() }}
         uses: sarisia/actions-status-discord@v1
         with: 
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
           content: Build failed
           description: "Build failed for commit ${{ github.event.head_commit.url }} by author ${{ github.event.head_commit.committer.username }}"
           
